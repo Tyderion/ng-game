@@ -1,72 +1,78 @@
 module.exports = (function(Game) {
-    
+
     Game.Prefabs.Player = function(game, x, y, target, id) {
         this.id = id;
         if (target) {
             Phaser.Sprite.call(this, game, x, y, 'hero');
             // Target: mouse
             this.target = target;
-            
+
             // Follow pointer
             this.follow = false;
-            
+
             // Minimum away
             this.minDistance = 10;
-            
+
             // Speed
-            this.speed = 200;
-            
+            this.speed = 400;
+
             // Lives
             this.lives = 3;
-            
+
             // Shot delay
-            this.shotDelay = 100;
-            
+            this.shotDelay = 80;
+
             // Number of bullets per shot
-            this.numBullets = 10;
+            this.numBullets = 1000;
             this.timerBullet;
-            
+
             this.shieldsEnabled = false;
             this.timerShield;
             this.shield = this.game.add.sprite(0, 0, 'shield');
             this.shield.anchor.setTo(0.5, 0.5);
             this.shield.alpha = 0
-            
+
             // Scale
             this.scale.setTo(1.2, 1.2);
         } else {
             Phaser.Sprite.call(this, game, x, y, 'hero');
-            
+
             this.scale.setTo(0.5, 0.5);
             this.alpha = 0.8;
             this.x = x;
             this.y = y;
-            
+
             // State queue
             this.stateQueue = [];
             this.minQueueSize = 10;
             this.maxQueueSize = 30;
             this.previousStateTime = 0;
         }
-        
+
         // Explosion
         this.explosion = this.game.add.sprite(0, 0, 'explosion');
         this.explosion.anchor.setTo(0.5, 0.5);
         this.explosion.alpha = 0;
-        
+
         this.health = 100;
         // Anchor
         this.anchor.setTo(0.5, 0.5);
         // Rotate 90s so it's facing up
         this.rotation = -Math.PI / 2;
-        
+
         this.game.physics.enable(this, Phaser.Physics.ARCADE);
     }
     ;
-    
+
+
     Game.Prefabs.Player.prototype = Object.create(Phaser.Sprite.prototype);
     Game.Prefabs.Player.constructor = Game.Prefabs.Player;
-    
+
+    Game.Prefabs.Player.prototype.setVelocity = function(x, y) {
+    this.body.velocity.setTo(x*this.speed,y*this.speed);
+  };
+
+
     // Update
     Game.Prefabs.Player.prototype.update = function() {
         if (this.target) {
@@ -75,7 +81,7 @@ module.exports = (function(Game) {
             this.updateRemote();
         }
     }
-    
+
     Game.Prefabs.Player.prototype.onUpdateFromServer = function(data) {
         if (this.stateQueue.length > this.maxQueueSize) {
             this.stateQueue.splice(this.minQueueSize, this.maxQueueSize - this.minQueueSize);
@@ -83,18 +89,18 @@ module.exports = (function(Game) {
         this.stateQueue.unshift(data);
     }
     ;
-    
+
     Game.Prefabs.Player.prototype.updateHero = function() {
         var distance, rotation;
         // Follow pointer
         if (this.follow) {
             distance = this.game.math.distance(this.x, this.y, this.target.x, this.target.y);
-            
+
             if (distance > this.minDistance) {
                 rotation = this.game.math.angleBetween(this.x, this.y, this.target.x, this.target.y);
-                
-                this.body.velocity.x = Math.cos(rotation) * this.speed * Math.min(distance / 120, 2);
-                this.body.velocity.y = Math.sin(rotation) * this.speed * Math.min(distance / 120, 2);
+
+                //this.body.velocity.x = Math.cos(rotation) * this.speed * Math.min(distance / 120, 2);
+                //this.body.velocity.y = Math.sin(rotation) * this.speed * Math.min(distance / 120, 2);
                 this.rotation = rotation;
             } else {
                 this.body.velocity.setTo(0, 0);
@@ -102,7 +108,7 @@ module.exports = (function(Game) {
         } else {
             this.body.velocity.setTo(0, 0);
         }
-        
+
         // Shields
         if (this.shieldsEnabled) {
             this.shield.x = this.x;
@@ -111,35 +117,35 @@ module.exports = (function(Game) {
         }
     }
     ;
-    
+
     Game.Prefabs.Player.prototype.updateRemote = function() {
         if (this.stateQueue.length > this.minQueueSize) {
             var earliestQueue = this.stateQueue.pop();
-            
-            
+
+
             if (!this.previousStateTime) {
                 this.previousStateTime = new Date().getTime();
             }
-            
+
             var tweenTime = Math.abs(this.previousStateTime - (earliestQueue.timestamp + 10));
             this.game.add.tween(this)
             .to({
                 x: earliestQueue.x,
                 y: earliestQueue.y,
                 rotation: earliestQueue.rotation
-            }, tweenTime, 
+            }, tweenTime,
             Phaser.Easing.Linear.None, true, 0);
-            
+
             this.previousStateTime = earliestQueue.timestamp;
         }
     }
     ;
-    
+
     Game.Prefabs.Player.prototype.die = function(autoKill) {
         if (!this.dead) {
             this.dead = true;
             this.alpha = 0;
-            
+
             // Explosion
             if (!autoKill) {
                 this.showExplosion();
@@ -147,23 +153,23 @@ module.exports = (function(Game) {
         }
     }
     ;
-    
+
     Game.Prefabs.Player.prototype.wasHitBy = function(bullet, player) {
         if (!this.shieldsEnabled) {
             this.health -= 10;
-            
+
             if (this.health <= 0) {
                 this.die();
             } else {
                 this.enableShield(0.3);
                 this.showExplosion();
             }
-            
+
             return true;
         }
     }
     ;
-    
+
     Game.Prefabs.Player.prototype.showExplosion = function() {
         this.explosion.reset(this.x, this.y);
         this.explosion.alpha = 0;
@@ -184,32 +190,32 @@ module.exports = (function(Game) {
         }, 500, Phaser.Easing.Cubic.Out, true, 0);
     }
     ;
-    
+
     Game.Prefabs.Player.prototype.enableShield = function(duration) {
         this.shieldsEnabled = true;
-        
+
         if (this.timerShield && !this.timerShield.expired) {
             this.timerShield.destroy();
         }
-        
+
         this.timerShield = this.game.time.create(true);
         this.timerShield.add(Phaser.Timer.SECOND * duration, this.disableShield, this);
         this.timerShield.start();
-        
+
         this.game.add.tween(this.shield)
         .to({
             alpha: 1
         }, 300, Phaser.Easing.Cubic.Out, true, 0);
     }
     ;
-    
+
     Game.Prefabs.Player.prototype.disableShield = function() {
         this.game.add.tween(this.shield)
         .to({
             alpha: 0
-        }, 300, 
-        Phaser.Easing.Linear.NONE, 
-        true, 
+        }, 300,
+        Phaser.Easing.Linear.NONE,
+        true,
         0, 6, true).onComplete.add(function() {
             this.shieldsEnabled = false;
         }
