@@ -1,9 +1,9 @@
-module.exports = (function(Game) {
+module.exports = function(Game) {
     var g = Game;
     Game.States.Play = function(game) {}
-    
+
     Game.States.Play.prototype = {
-        inputManager: inputManager(),
+        inputManager: new InputManager(),
         create: createGame,
         update: update,
         updateRemoteServer: updateRemoteServer,
@@ -32,10 +32,10 @@ module.exports = (function(Game) {
         forEachEnemy: forEachEnemy,
         pauseGame: pauseGame
     }
-    
+
     function updateRemoteServer() {
         var game = this.game;
-        
+
         g.socket.emit('updatePlayer', {
             x: this.hero.x,
             y: this.hero.y,
@@ -45,35 +45,35 @@ module.exports = (function(Game) {
             rotation: this.hero.rotation,
             timestamp: new Date().getTime()
         });
-        
+
         this.updateRemoteServerTimer = this.game.time.events
         .add(
         20, // Every 100 miliseconds
-        this.updateRemoteServer, 
+        this.updateRemoteServer,
         this);
     }
-    
+
     function addPlayer(x, y, id) {
         // We ALWAYS have us as a player
         var player = new Game.Prefabs.Player(this.game,this.game.width / 2,100,null ,id);
         this.game.add.existing(player);
-        
+
         return player;
     }
-    
+
     function update() {
         if (!Game.paused) {
             // this.updatePlayer();
-            
+
             this.addPlayers();
             this.removePlayers();
             // Run game loop thingy
             this.checkCollisions();
-            
+
             this.fpsText.setText(this.game.time.fps + ' FPS');
         }
     }
-    
+
     function removePlayers() {
         while (g.toRemove.length !== 0) {
             var toRemove = g.toRemove.shift();
@@ -93,60 +93,60 @@ module.exports = (function(Game) {
     function goToMenu() {
         Game.backgroundX = this.background.tilePosition.x;
         Game.backgroundY = this.background.tilePosition.y;
-        
+
         this.game.state.start('MainMenu');
     }
     function initGame() {
         // Generate enemies
         // this.enemiesGenerator = this.game.time.events
         // .add(2000, this.generateEnemies, this);
-        
+
         // Generate enemies laser
         // this.lasersGenerator = this.game.time.events
         // .add(1000, this.shootLaser, this);
-        
+
         // Generate server updates
         this.updateRemoteServerTimer = this.game.time.events
         .add(200, this.updateRemoteServer, this);
-        
+
         // Show UI
         // this.game.add.tween(this.livesGroup)
         //   .to({alpha:1}, 600, Phaser.Easing.Exponential.Out, true);
         // this.game.add.tween(this.scoreText)
         //   .to({alpha:1}, 600, Phaser.Easing.Exponential.Out, true);
-        
+
         // Play
         this.playGame();
     }
     function playGame() {
         if (Game.paused) {
             Game.paused = false;
-            
+
             this.hero.follow = true;
             this.hero.body.collideWorldBounds = true;
-            
+
             // NEED TO UPDATE THIS
             // this.enemiesGenerator.timer.resume();
-            
+
             this.lasers.forEach(function(laser) {
                 laser.resume();
             }
             , this);
-            
+
             this.game.input.x = this.hero.x;
             this.game.input.y = this.hero.y;
-        
+
         }
     }
     function generateEnemies() {
         var levelEnemies = this.levelData.enemies;
         for (var i = 0; i < levelEnemies.length; i++) {
-            
+
             var enemyGroup = this.enemyGroups[i]
-              , 
+              ,
             levelEnemy = levelEnemies[i];
             var enemies = enemyGroup.getFirstExists(false);
-            
+
             if (!enemies) {
                 enemies = new Game.Prefabs
                 .Enemies(this.game,
@@ -157,14 +157,14 @@ module.exports = (function(Game) {
             }
             // reset(fromY, toY, speed)
             enemies
-            .reset(this.game.rnd.integerInRange(0, this.game.width), 
+            .reset(this.game.rnd.integerInRange(0, this.game.width),
             this.game.rnd.integerInRange(0, this.game.width));
         }
-        
+
         // Relaunch timer depending on level
         this.enemiesGenerator = this.game.time.events
         .add(
-        this.game.rnd.integerInRange(20, 50) * 500 / (this.level + 1), 
+        this.game.rnd.integerInRange(20, 50) * 500 / (this.level + 1),
         this.generateEnemies, this);
     }
     function setVelocity() {
@@ -220,7 +220,7 @@ module.exports = (function(Game) {
         this.shootInterval = setInterval(this.shootBullet.bind(this), 10);
         // console.log('start shooting: ', this.shootInterval);
     }
-    
+
     function shootBullet() {
         // Check delay time
         if (this.lastBulletShotAt === undefined)
@@ -229,16 +229,16 @@ module.exports = (function(Game) {
             return;
         }
         this.lastBulletShotAt = this.game.time.now;
-        
+
         // Create bullets
         var bullet, bulletPosY;
         bullet = this.bullets.getFirstExists(false);
         if (bullet) {
-            
+
             bullet.reset(this.hero.x, this.hero.y);
             // Shoot the darn thing
             bullet.shoot();
-            
+
             this.game.socket.emit('shotbullet', {
                 id: g.sid,
                 y: bullet.y,
@@ -247,21 +247,21 @@ module.exports = (function(Game) {
             });
         }
     }
-    
+
     function checkCollisions() {
         if (Game.multiplayer) {
             // g.remotePlayers.forEach(function(player) {
             this.game.physics.arcade.overlap(
-            this.remoteBullets, 
-            this.hero, this.killHero, 
+            this.remoteBullets,
+            this.hero, this.killHero,
             null , this);
-            
+
             g.remotePlayers.forEach(function(remotePlayer) {
                 this.game.physics.arcade.overlap(
                 this.bullets, remotePlayer, this.hitARemotePlayer, null , this);
             }
             , this);
-            
+
             // }, this);
         } else {
             // Single player mode requires enemies
@@ -272,23 +272,23 @@ module.exports = (function(Game) {
                     this.game.physics.arcade.overlap(this.bullets, enemy, this.killEnemy, null , this);
                 }
                 , this);
-                
+
                 enemies.forEach(function(enemy) {
                     this.game.physics.arcade.overlap(this.hero, enemy, this.killHero, null , this);
                 }
                 , this);
             }
-            
+
             this.game.physics.arcade.overlap(this.hero, this.lasers, this.killHero, null , this);
             this.game.physics.arcade.overlap(this.hero, this.bonus, this.activeBonus, null , this);
         }
     }
-    
+
     function addPlayers() {
         while (g.toAdd.length !== 0) {
             var data = g.toAdd.shift();
             if (data) {
-                var toAdd = 
+                var toAdd =
                 this.addPlayer(data.x, data.y, data.id);
                 g.remotePlayers.push(toAdd);
             }
@@ -298,7 +298,7 @@ module.exports = (function(Game) {
         this.score += enemy.desc ? enemy.desc.maxHealth : 1;
         this.scoreText.setText('Score: ' + this.score + '');
     }
-    
+
     function killEnemy(bullet, enemy) {
         if (!enemy.dead && enemy.checkWorldBounds) {
             enemy.die();
@@ -306,15 +306,15 @@ module.exports = (function(Game) {
             this.updateScore(enemy);
         }
     }
-    
+
     function killHero(hero, enemy) {
-        if (enemy instanceof Game.Prefabs.Laser || 
-        (enemy instanceof Game.Prefabs.Enemy && 
-        !enemy.dead && 
+        if (enemy instanceof Game.Prefabs.Laser ||
+        (enemy instanceof Game.Prefabs.Enemy &&
+        !enemy.dead &&
         enemy.checkWorldBounds)) {
             this.hero.lives--;
             this.screenFlash.flash();
-            
+
             if (this.hero.lives < 1) {
                 this.gameOver();
             } else {
@@ -332,19 +332,19 @@ module.exports = (function(Game) {
                 }
                 , this);
             }
-        
+
         } else if (enemy instanceof Game.Prefabs.Bullet) {
-            
+
             var bullet = enemy
-              , 
+              ,
             player = bullet.player;
-            
+
             bullet.kill();
-            
+
             if (this.hero.wasHitBy(bullet, player)) {
                 // Shot by a player
                 this.screenFlash.flash();
-                
+
                 // Notify server
                 this.game.socket.emit('playerHit', {
                     shooter: player.id,
@@ -352,11 +352,11 @@ module.exports = (function(Game) {
                     health: this.hero.health
                 });
             }
-            
+
             if (this.hero.health < 0) {
                 this.gameOver();
             }
-            
+
             // bullet.die();
             // } else {
             // enemy.die(true);
@@ -367,7 +367,7 @@ module.exports = (function(Game) {
         this.level = Game.currentLevel || 0;
         this.levelData = Game.Levels[this.level];
         this.points = 0;
-        
+
         // Background
         this.background = this.game.add.tileSprite(0, 0, this.game.width, this.game.height, 'background' + this.level);
         this.background.autoScroll(1, 15);
@@ -376,11 +376,11 @@ module.exports = (function(Game) {
         this.game.add.tween(this.background)
         .to({
             alpha: 0.3
-        }, 
-        5000, 
-        Phaser.Easing.Linear.NONE, 
+        },
+        5000,
+        Phaser.Easing.Linear.NONE,
         true, 0, Number.POSITIVE_INFINITY, true);
-        
+
         // FPS
         this.game.time.advancedTiming = true;
         this.fpsText = this.game.add.text(
@@ -389,7 +389,7 @@ module.exports = (function(Game) {
             fill: '#ffffff'
         }
         );
-        
+
         // Enemy Lasers
         this.lasers = game.add.group();
         // Enemies
@@ -403,7 +403,7 @@ module.exports = (function(Game) {
             this.enemyGroupsCount++;
         }
         ;
-        
+
         this.score = 0;
         // This player's bullets
         this.bullets = game.add.group();
@@ -411,29 +411,29 @@ module.exports = (function(Game) {
         this.remoteBullets = game.add.group();
         // We have other players
         g.remotePlayers = game.remotePlayers || [];
-        
+
         // Setup shooting
         this.game.input.onDown.add(this.startShooting, this);
         this.game.input.onUp.add(this.stopShooting, this);
         this.game.input.keyboard.enabled = true;
         this.game.input.keyboard.addCallbacks(this, this.onKeyDown, this.onKeyUp, this.onKeyPress);
-        
-        
+
+
         g.sio = g.socket;
-        
+
         // We ALWAYS have us as a player
         g.hero = this.hero = new Game.Prefabs.Player(this.game,
         this.game.width / 2,
         this.game.height + 60 + 20,
         this.game.input,
         true,g.sio);
-        
+
         this.game.add.existing(this.hero);
         // this.game.add.tween(this.hero)
         // .to({
         //   y: this.game.height - (this.hero.height + 20)
         // }, 1500, Phaser.Easing.Exponential.Out, true);
-        
+
         // Display lives
         this.livesGroup = this.game.add.group();
         this.livesGroup.add(this.game.add.sprite(0, 0, 'lives'));
@@ -443,31 +443,31 @@ module.exports = (function(Game) {
         this.livesGroup.x = this.game.width - 55;
         this.livesGroup.y = 5;
         this.livesGroup.alpha = 0;
-        
+
         // Add bullets
         for (var i = 0; i < this.hero.numBullets; i++) {
             var bullet = new Game.Prefabs.Bullet(this.game,0,0,this.hero);
             this.bullets.add(bullet);
         }
-        
+
         // Score
         this.score = 0;
         this.scoreText = this.game.add.bitmapText(10, this.game.height - 27, 'architectsDaughter', 'Score: 0', 16);
         this.scoreText.alpha = 0;
-        
+
         // Juicy
         this.juicy = this.game.plugins.add(Phaser.Plugin.Juicy);
         this.screenFlash = this.juicy.createScreenFlash();
         this.add.existing(this.screenFlash);
-        
+
         this.game_music = game.add.audio('game_music');
         // this.game_music.play();
-        
+
         // Enter play mode after init state
         this.timerInit = this.game.time.create(true);
         this.timerInit.add(Phaser.Timer.SECOND * 1.5, this.initGame, this);
         this.timerInit.start();
-        
+
         var gamePlay = this;
         var gamePlayer = _.extend(this.hero, {
             id: g.sid,
@@ -475,7 +475,7 @@ module.exports = (function(Game) {
         })
         gamePlay.game.scope
         .$emit('game:newPlayer', gamePlayer);
-        
+
         if (Game.multiplayer) {
             // Helpers
             var removePlayer = function(player, map) {
@@ -486,17 +486,17 @@ module.exports = (function(Game) {
                     mapId: map
                 });
             }
-            
+
             // Handlers
             this.game.socket.on('gameUpdated:add', function(data) {
                 console.log('gameUpdated:add');
                 var allPlayers = data.allPlayers
-                  , 
+                  ,
                 newPlayers = [];
-                
+
                 for (var i = 0; i < allPlayers.length; i++) {
                     var playerInQuestion = allPlayers[i];
-                    
+
                     if (playerInQuestion.id === g.hero.id) {
                     // Nope, we're already added
                     } else if (Game.playerById(playerInQuestion.id)) {
@@ -508,19 +508,19 @@ module.exports = (function(Game) {
                 }
             }
             );
-            
+
             this.game.socket.on('gameUpdated:remove', function(data) {
                 var allPlayers = g.remotePlayers
-                  , 
+                  ,
                 newPlayerList = data.allPlayers
-                  , 
+                  ,
                 newPlayers = [];
-                
+
                 var mapId = data.map;
-                
+
                 for (var i = 0; i < allPlayers.length; i++) {
                     var playerInQuestion = allPlayers[i];
-                    
+
                     if (playerInQuestion.id === g.hero.id) {
                     // Nope, we're already added
                     } else {
@@ -540,28 +540,28 @@ module.exports = (function(Game) {
                 }
             }
             );
-            
+
             this.game.socket.on('updatePlayers', function(data) {
                 var playersData = data.game.players;
-                
+
                 for (var i = 0; i < playersData.length; i++) {
                     var playerData = playersData[i];
                     var player;
-                    
+
                     if (playerData.id !== g.sid) {
                         player = Game.playerById(playerData.id);
                         if (player) {
                             player.onUpdateFromServer(playerData);
                         }
                     }
-                
+
                 }
             }
             );
-            
+
             this.game.socket.on('bulletShot', function(data) {
                 var player = Game.playerById(data.id);
-                
+
                 if (player) {
                     bullet = gamePlay.remoteBullets.getFirstExists(false);
                     if (!bullet) {
@@ -570,12 +570,12 @@ module.exports = (function(Game) {
                     }
                     // Shoot the darn thing
                     bullet.shoot();
-                    
+
                     bullet.reset(data.x, data.y);
                 }
             }
             );
-            
+
             this.game.socket.on('playerHit', function(data) {
                 if (data.victim === g.sid) {
                     // We were hit
@@ -592,7 +592,7 @@ module.exports = (function(Game) {
                 }
             }
             );
-            
+
             this.game.socket.on('gameOver', function(data) {
                 var winnerId = data.winner.id;
                 if (winnerId === g.sid) {
@@ -605,15 +605,15 @@ module.exports = (function(Game) {
                 gamePlay.gameOver();
             }
             );
-            
+
             g.socket.emit('newPlayer', {
                 mapId: Game.mapId,
                 health: this.hero.health
             });
         }
     }
-    
-    function inputManager() {
+
+    function InputManager() {
         var game = this.game;
         var self = this;
         this.velocityX = 0;
@@ -624,7 +624,7 @@ module.exports = (function(Game) {
             UP: false,
             DOWN: false
         }
-        
+
         return {
             onLeft: onLeft,
             onUp: onUp,
@@ -632,91 +632,91 @@ module.exports = (function(Game) {
             onRight: onRight,
             getVelocity: getVelocity
         }
-        
+
         function onLeft(pressed) {
             self.isDown.LEFT = pressed;
             self.velocityX = pressed ? -1 : self.isDown.RIGHT ? 1 : 0;
         }
-        
+
         function onRight(pressed) {
             self.isDown.RIGHT = pressed;
             self.velocityX = pressed ? 1 : self.isDown.LEFT ? -1 : 0;
         }
-        
+
         function onUp(pressed) {
             self.isDown.UP = pressed;
             self.velocityY = pressed ? -1 : self.isDown.DOWN ? 1 : 0;
-        
+
         }
-        
+
         function onDown(pressed) {
             self.isDown.RIGHT = pressed;
             self.velocityY = pressed ? 1 : self.isDown.UP ? -1 : 0;
         }
-        
+
         function getVelocity() {
             var multiplier = 1;
-            if (velocityX !== 0 && velocityY != 0) {
+            if (self.velocityX !== 0 && self.velocityY != 0) {
                 multiplier = 1 / Math.SQRT2;
             }
             return {
-                x: velocityX * multiplier,
-                y: velocityY * multiplier
+                x: self.velocityX * multiplier,
+                y: self.velocityY * multiplier
             }
         }
     }
-    
+
     function hitARemotePlayer(player, bullet) {
         if (!player.shieldsEnabled) {
             player.showExplosion();
         }
         bullet.kill();
     }
-    
+
     function gameOver() {
         // this.game.input.onDown.add(this.shootBullet, this);
         this.game.input.onDown.removeAll();
-        
+
         this.gameover = true;
-        
+
         this.juicy.shake(20, 5);
-        
+
         this.game.add.tween(this.hero)
         .to({
             alpha: 0
         }, 500, Phaser.Easing.Exponential.Out, true);
-        
+
         this.scoreText.alpha = 0;
         this.livesGroup.alpha = 0;
-        
+
         this.pauseGame();
-        
+
         // Clean up socket
         this.game.socket.removeAllListeners();
-        
+
         // Show the gameover panel
         this.state.start('GameOver');
     }
-    
+
     function shootLaser() {
         var laser = this.lasers.getFirstExists(false);
-        
+
         if (!laser) {
             laser = new Game.Prefabs.Laser(this.game,0,0);
             this.lasers.add(laser);
         }
         laser.reset(
-        this.game.width + laser.width / 2, 
+        this.game.width + laser.width / 2,
         this.game.rnd.integerInRange(20, this.game.height));
         laser.reload(100 + (this.level + 1) * 30);
-        
+
         // Relaunch bullet timer depending on level
         this.lasersGenerator = this.game.time.events
         .add(
-        this.game.rnd.integerInRange(12, 20) * 250 / (this.level + 1), 
+        this.game.rnd.integerInRange(12, 20) * 250 / (this.level + 1),
         this.shootLaser, this);
     }
-    
+
     function forEachEnemy(fn) {
         var levelEnemies = this.enemyGroups;
         for (var i = 0; i < this.enemyGroupsCount; i++) {
@@ -724,30 +724,29 @@ module.exports = (function(Game) {
             enemies.forEach(fn, this);
         }
     }
-    
+
     function pauseGame() {
         if (!Game.paused) {
             Game.paused = true;
             this.hero.follow = false;
-            
+
             if (Game.multiplayer) {} else {
                 this.enemiesGenerator.timer.pause();
-                
+
                 this.forEachEnemy(function(group) {
                     group.callAll('pause');
                 }
                 );
-                
+
                 this.lasers.forEach(function(laser) {
                     laser.pause();
                 }
                 , this);
             }
-            
+
             if (!this.gameover) {
             // this.pausePanel.show();
             }
         }
     }
 }
-);

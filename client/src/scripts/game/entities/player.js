@@ -1,4 +1,4 @@
-module.exports = (function(Game) {
+module.exports = function(Game) {
 
     Game.Prefabs.Player = Player;
     Game.Prefabs.Player.prototype = Object.create(Phaser.Sprite.prototype);
@@ -222,4 +222,5 @@ module.exports = (function(Game) {
 
         this.game.physics.enable(this, Phaser.Physics.ARCADE);
     };
-});
+}
+
