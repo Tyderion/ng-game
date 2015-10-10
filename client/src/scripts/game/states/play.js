@@ -634,7 +634,6 @@ module.exports = (function(Game) {
         }
         
         function onLeft(pressed) {
-            console.log('on Left', pressed);
             self.isDown.LEFT = pressed;
             self.velocityX = pressed ? -1 : self.isDown.RIGHT ? 1 : 0;
         }
