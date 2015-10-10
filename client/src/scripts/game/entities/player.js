@@ -33,11 +33,11 @@ module.exports = (function(Game) {
             this.shield.alpha = 0
 
             // Scale
-            this.scale.setTo(1.2, 1.2);
+            //this.scale.setTo(1.2, 1.2);
         } else {
             Phaser.Sprite.call(this, game, x, y, 'hero');
 
-            this.scale.setTo(0.5, 0.5);
+            //this.scale.setTo(0.5, 0.5);
             this.alpha = 0.8;
             this.x = x;
             this.y = y;
