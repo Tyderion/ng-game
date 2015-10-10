@@ -1,8 +1,9 @@
-module.exports = 
+module.exports =
 (function(app, io) {
   var util = require('util');
   var Player = require('./../models/Player');
   var Map = require('./../models/Map');
+
 
   g = {
     io: undefined,
@@ -19,6 +20,7 @@ module.exports =
 
 
   function bindSocketEvents() {
+    util.log("bindSocketEvents")
     g.io.sockets.on('connection', function onConnection(socket) {
       util.log("Client has connected: " + socket.id);
 
@@ -208,7 +210,7 @@ module.exports =
         map = g.maps[mapId];
 
     // this.broadcast.to(player.mapId)
-    //   .emit('removePlayer', { 
+    //   .emit('removePlayer', {
     //     id: this.id,
     //     players: map.players
     //   });
@@ -248,11 +250,11 @@ module.exports =
     });
 
     // this.broadcast.to(player.mapId)
-    //   .emit('removePlayer', { 
+    //   .emit('removePlayer', {
     //     id: this.id,
     //     players: map.players
     //   });
-  
+
     console.log('onPlayerLeftMap', map.players.length);
     if (map.players.length <= 0) {
       g.io.emit('global:removeMap', {
