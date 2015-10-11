@@ -1,48 +1,59 @@
 module.exports = (function(Game) {
 
-  Game.Prefabs.PausePanel = function(game, parent){
-    // Super call to Phaser.Group
-    Phaser.Group.call(this, game, parent);
+    Game.Prefabs.PausePanel = PausePanel;
 
-    // Add panel
-    this.panel = this.game.add.sprite(0, 0, 'panel');
-    this.panel.width = 480;
-    this.panel.height = 80;
-    this.add(this.panel);
+    Game.Prefabs.PausePanel.prototype = Object.create(Phaser.Group.prototype);
+    Game.Prefabs.PausePanel.constructor = Game.Prefabs.PausePanel;
 
-    // Pause text
-    this.textPause = this.game.add.bitmapText(game.width/2, -42, 'kenpixelblocks', 'Pause', 28);
-    this.textPause.position.x = this.game.width/2 - this.textPause.textWidth/2;
-    this.add(this.textPause);
+    Game.Prefabs.PausePanel.prototype.show = show;
+    Game.Prefabs.PausePanel.prototype.unPause = unPause;
 
-    // Group pos
-    this.y = -80;
-    this.x = 0;
-    this.alpha = 0;
+    function PausePanel(game, parent) {
+        // Super call to Phaser.Group
+        Phaser.Group.call(this, game, parent);
 
-    // Play button
-    this.btnPlay = this.game.add.button(this.game.width/2-32, 15, 'btn', this.unPause, this, 3, 2, 3, 2);
-    this.btnPlay.anchor.setTo(0.5, 0);
-    this.add(this.btnPlay);
+        // Add panel
+        this.panel = this.game.add.sprite(0, 0, 'panel');
+        this.panel.width = 480;
+        this.panel.height = 80;
+        this.add(this.panel);
 
-    // Btn Menu
-    this.btnMenu = this.game.add.button(this.game.width/2+28, 15, 'btn', function(){
-      this.game.state.getCurrentState().goToMenu();
-    }, this, 5, 4, 5, 4);
-    this.btnMenu.anchor.setTo(0.5, 0);
-    this.add(this.btnMenu);
-  };
+        // Pause text
+        this.textPause = this.game.add.bitmapText(game.width / 2, -42, 'kenpixelblocks', 'Pause', 28);
+        this.textPause.position.x = this.game.width / 2 - this.textPause.textWidth / 2;
+        this.add(this.textPause);
 
-  Game.Prefabs.PausePanel.prototype = Object.create(Phaser.Group.prototype);
-  Game.Prefabs.PausePanel.constructor = Game.Prefabs.PausePanel;
+        // Group pos
+        this.y = -80;
+        this.x = 0;
+        this.alpha = 0;
 
-  Game.Prefabs.PausePanel.prototype.show = function(){
-    this.game.add.tween(this).to({alpha:1, y:this.game.height/2 - this.panel.height/2}, 1000, Phaser.Easing.Exponential.Out, true, 0);
-  };
+        // Play button
+        this.btnPlay = this.game.add.button(this.game.width / 2 - 32, 15, 'btn', this.unPause, this, 3, 2, 3, 2);
+        this.btnPlay.anchor.setTo(0.5, 0);
+        this.add(this.btnPlay);
 
-  Game.Prefabs.PausePanel.prototype.unPause = function(){
-    this.game.add.tween(this).to({alpha:0, y:-80}, 1000, Phaser.Easing.Exponential.Out, true, 0);
-    this.game.state.getCurrentState().playGame();
-  };
+        // Btn Menu
+        this.btnMenu = this.game.add.button(this.game.width / 2 + 28, 15, 'btn', function() {
+            this.game.state.getCurrentState().goToMenu();
+        }, this, 5, 4, 5, 4);
+        this.btnMenu.anchor.setTo(0.5, 0);
+        this.add(this.btnMenu);
+    }
+
+    function show() {
+        this.game.add.tween(this).to({
+            alpha: 1,
+            y: this.game.height / 2 - this.panel.height / 2
+        }, 1000, Phaser.Easing.Exponential.Out, true, 0);
+    }
+
+    function unPause() {
+        this.game.add.tween(this).to({
+            alpha: 0,
+            y: -80
+        }, 1000, Phaser.Easing.Exponential.Out, true, 0);
+        this.game.state.getCurrentState().playGame();
+    }
 
 });
