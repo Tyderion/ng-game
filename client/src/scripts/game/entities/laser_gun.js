@@ -1,9 +1,15 @@
+
 var Laser = require('./laser');
 
-var LaserGun = function(player, color) {
+module.exports = LaserGun;
+
+LaserGun.prototype.shootLaser = shootLaser;
+LaserGun.prototype.handledKilled = handledKilled;
+
+function LaserGun(player, color) {
   this.SHOT_DELAY = 200; // 100ms
   this.NUMBER_OF_BULLETS = 10;
-  
+
   this.game = player.game;
   this.player = player;
   this.color = color;
@@ -25,10 +31,8 @@ var LaserGun = function(player, color) {
   }
 }
 
-module.exports = LaserGun;
-
-LaserGun.prototype.shootLaser = function() {
-  if (this.game.time.now - this.lastBulletShotAt < this.SHOT_DELAY) return; 
+function shootLaser() {
+  if (this.game.time.now - this.lastBulletShotAt < this.SHOT_DELAY) return;
   this.lastBulletShotAt = this.game.time.now;
 
   // Get a laser
@@ -39,7 +43,6 @@ LaserGun.prototype.shootLaser = function() {
   laser.shoot(this.player);
   this.activeLasers.push(laser);
 }
-
-LaserGun.prototype.handledKilled = function(laser) {
+function handledKilled(laser) {
   this.activeLasers.splice(this.activeLasers.indexOf(laser), 1);
 }
