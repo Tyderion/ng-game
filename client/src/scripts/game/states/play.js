@@ -1,10 +1,12 @@
 module.exports = function(Game) {
     var g = Game;
+    var showDebug = true;
     Game.States.Play = function(game) {}
 
     Game.States.Play.prototype = {
         inputManager: new InputManager(),
         create: createGame,
+        render: render,
         update: update,
         updateRemoteServer: updateRemoteServer,
         addPlayers: addPlayers,
@@ -32,6 +34,23 @@ module.exports = function(Game) {
         forEachEnemy: forEachEnemy,
         pauseGame: pauseGame,
         pickup: pickup
+    }
+
+    var spritesToBodyDebug = [];
+
+    function debug(sprite) {
+        spritesToBodyDebug.push(sprite);
+    }
+
+    var spriteToShowInfo = undefined;
+
+    function render() {
+        if (showDebug) {
+            if (typeof spriteToShowInfo !== 'undefined') {
+                this.game.debug.bodyInfo(spriteToShowInfo, 32, 32);
+            }
+             spritesToBodyDebug.forEach(x => this.game.debug.body(x));
+        }
     }
 
     function updateRemoteServer() {
@@ -435,6 +454,7 @@ module.exports = function(Game) {
         true,g.sio);
 
         this.game.add.existing(this.hero);
+        debug(this.hero);
         // this.game.add.tween(this.hero)
         // .to({
         //   y: this.game.height - (this.hero.height + 20)
