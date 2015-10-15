@@ -30,7 +30,8 @@ module.exports = function(Game) {
         shootLaser: shootLaser,
         gameOver: gameOver,
         forEachEnemy: forEachEnemy,
-        pauseGame: pauseGame
+        pauseGame: pauseGame,
+        pickup: pickup
     }
 
     function updateRemoteServer() {
@@ -252,6 +253,11 @@ module.exports = function(Game) {
         if (Game.multiplayer) {
             // g.remotePlayers.forEach(function(player) {
             this.game.physics.arcade.overlap(
+        this.pickups.forEach(function(pickup) {
+            this.game.physics.arcade.overlap(this.hero,
+                pickup, this.pickup, null, this);
+        }, this)
+
             this.remoteBullets,
             this.hero, this.killHero,
             null , this);

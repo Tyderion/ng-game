@@ -14,6 +14,13 @@ module.exports = function(Game) {
     Game.Prefabs.Player.prototype.showExplosion = showExplosion;
     Game.Prefabs.Player.prototype.enableShield = enableShield;
     Game.Prefabs.Player.prototype.disableShield = disableShield;
+    Game.Prefabs.Player.prototype.pickup = pickup;
+
+
+    function pickup(pickup) {
+        //TODO: Improve pickup handling
+        this.speed = pickup.getPickupData().speed * this.baseSpeed;
+    }
 
 
     function setVelocity(x, y) {
