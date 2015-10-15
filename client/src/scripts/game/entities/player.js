@@ -17,9 +17,13 @@ module.exports = function(Game) {
     Game.Prefabs.Player.prototype.pickup = pickup;
 
 
+     var pickups = new Set();
+
     function pickup(pickup) {
-        //TODO: Improve pickup handling
-        this.speed = pickup.getPickupData().speed * this.baseSpeed;
+        pickups.add(pickup);
+        var test = Array.from(pickups).reduce((acc,e) => acc *= e.getPickupData().speed, 1)
+        console.log("pickup speed: " + test);
+        this.speed = test * this.baseSpeed;
     }
 
 
@@ -169,8 +173,8 @@ module.exports = function(Game) {
 
     function Player(game, x, y, target, id) {
         this.id = id;
-        if (target) {
             Phaser.Sprite.call(this, game, x, y, 'hero');
+        if (target) {
             // Target: mouse
             this.target = target;
 
@@ -181,7 +185,8 @@ module.exports = function(Game) {
             this.minDistance = 10;
 
             // Speed
-            this.speed = 400;
+            this.baseSpeed = 400;
+            this.speed = this.baseSpeed;
 
             // Lives
             this.lives = 3;
@@ -202,7 +207,6 @@ module.exports = function(Game) {
             // Scale
             //this.scale.setTo(1.2, 1.2);
         } else {
-            Phaser.Sprite.call(this, game, x, y, 'hero');
 
             //this.scale.setTo(0.5, 0.5);
             this.alpha = 0.8;
