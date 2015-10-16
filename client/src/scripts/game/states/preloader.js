@@ -68,6 +68,8 @@ module.exports = (function(Game) {
 
       this.load.image('laser', 'assets/laser.png');
       this.load.image('bullet', 'assets/bullet.png');
+      this.load.image('pickup_speed_up', 'assets/pickup_speed_up.png');
+      this.load.image('pickup_speed_down', 'assets/pickup_speed_down.png');
 
       // Audio
       this.load.audio('laserFx', 'assets/laser_01.mp3');

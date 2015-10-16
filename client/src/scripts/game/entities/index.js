@@ -9,4 +9,6 @@ module.exports = (function(Game) {
 
   require('./laser')(Game);
   require('./bullet')(Game);
+  require('./pickup')(Game);
+  require('./speedup')(Game);
 });

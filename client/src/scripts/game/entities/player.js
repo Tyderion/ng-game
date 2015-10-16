@@ -14,6 +14,17 @@ module.exports = function(Game) {
     Game.Prefabs.Player.prototype.showExplosion = showExplosion;
     Game.Prefabs.Player.prototype.enableShield = enableShield;
     Game.Prefabs.Player.prototype.disableShield = disableShield;
+    Game.Prefabs.Player.prototype.pickup = pickup;
+
+
+     var pickups = new Set();
+
+    function pickup(pickup) {
+        pickups.add(pickup);
+        var test = Array.from(pickups).reduce((acc,e) => acc *= e.getPickupData().speed, 1)
+        console.log("pickup speed: " + test);
+        this.speed = test * this.baseSpeed;
+    }
 
 
     function setVelocity(x, y) {
@@ -36,22 +47,8 @@ module.exports = function(Game) {
     }
 
     function updateHero() {
-        var distance, rotation;
-        // Follow pointer
-        if (this.follow) {
-            distance = this.game.math.distance(this.x, this.y, this.target.x, this.target.y);
-
-            if (distance > this.minDistance) {
-                rotation = this.game.math.angleBetween(this.x, this.y, this.target.x, this.target.y);
-
-                //this.body.velocity.x = Math.cos(rotation) * this.speed * Math.min(distance / 120, 2);
-                //this.body.velocity.y = Math.sin(rotation) * this.speed * Math.min(distance / 120, 2);
-                this.rotation = rotation;
-            } else {
-                this.body.velocity.setTo(0, 0);
-            }
-        } else {
-            this.body.velocity.setTo(0, 0);
+        if (this.target) {
+            this.rotation = this.game.math.angleBetween(this.x, this.y, this.target.x, this.target.y);
         }
 
         // Shields
@@ -162,8 +159,8 @@ module.exports = function(Game) {
 
     function Player(game, x, y, target, id) {
         this.id = id;
-        if (target) {
             Phaser.Sprite.call(this, game, x, y, 'hero');
+        if (target) {
             // Target: mouse
             this.target = target;
 
@@ -174,7 +171,8 @@ module.exports = function(Game) {
             this.minDistance = 10;
 
             // Speed
-            this.speed = 400;
+            this.baseSpeed = 400;
+            this.speed = this.baseSpeed;
 
             // Lives
             this.lives = 3;
@@ -195,7 +193,6 @@ module.exports = function(Game) {
             // Scale
             //this.scale.setTo(1.2, 1.2);
         } else {
-            Phaser.Sprite.call(this, game, x, y, 'hero');
 
             //this.scale.setTo(0.5, 0.5);
             this.alpha = 0.8;
