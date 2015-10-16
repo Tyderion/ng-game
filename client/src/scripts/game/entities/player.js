@@ -47,22 +47,8 @@ module.exports = function(Game) {
     }
 
     function updateHero() {
-        var distance, rotation;
-        // Follow pointer
-        if (this.follow) {
-            distance = this.game.math.distance(this.x, this.y, this.target.x, this.target.y);
-
-            if (distance > this.minDistance) {
-                rotation = this.game.math.angleBetween(this.x, this.y, this.target.x, this.target.y);
-
-                //this.body.velocity.x = Math.cos(rotation) * this.speed * Math.min(distance / 120, 2);
-                //this.body.velocity.y = Math.sin(rotation) * this.speed * Math.min(distance / 120, 2);
-                this.rotation = rotation;
-            } else {
-                this.body.velocity.setTo(0, 0);
-            }
-        } else {
-            this.body.velocity.setTo(0, 0);
+        if (this.target) {
+            this.rotation = this.game.math.angleBetween(this.x, this.y, this.target.x, this.target.y);
         }
 
         // Shields
