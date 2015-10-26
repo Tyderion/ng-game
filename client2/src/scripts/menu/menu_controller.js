@@ -1,6 +1,6 @@
 angular.module('app.menu')
 .controller('MenuController', function(mySocket, $scope, Room, User, $state) {
-  console.log('menu')
+  console.log('menu2')
   $scope.$on('map:update', function(evt, mapId) {
     ctrl.rooms = Room.getRooms();
   });
