@@ -2,18 +2,38 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>client2</title>
+  <title>Web client</title>  <!--Import Google Icon Font-->
+      <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <!-- substitute:css -->
+  <link rel="stylesheet" href="bower_components/ng-dialog/css/ngDialog.min.css" />
+  <link rel="stylesheet" href="bower_components/ng-dialog/css/ngDialog-theme-default.min.css" />
+    <!-- Compiled and minified CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/css/materialize.min.css">
+
+  <!-- Compiled and minified JavaScript -->
+      <!--Import jQuery before materialize.js-->
+      <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/js/materialize.min.js"></script>
 </head>
-<body ng-app="app" ng-controller="HomeCtrl">
-  <h1>client2 v{{version}}</h1>
-  <p>Welcome to your app!</p>
-  <p>We know you have things to do, so we won't bother you with too much generated code. Happy coding ;-)</p>
+<body ng-app="app" >
+  <div navbar></div>
+  <div overlay-bar></div>
+  <div class='content'>
+    <div ui-view></div>
+  </div>
 
   <!-- substitute:livereload -->
-  <script type="text/javascript" src="bower_components/angular/angular.min.js"></script>
-  
+  <script type="text/javascript" src="bower_components/jquery/dist/jquery.js"></script>
+  <script type="text/javascript" src="bower_components/lodash/lodash.js"></script>
+  <script type="text/javascript" src="bower_components/angular/angular.js"></script>
+  <script type="text/javascript" src="bower_components/ngDialog/js/ngDialog.js"></script>
+  <script type="text/javascript" src="bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
+  <script type="text/javascript" src="bower_components/ng-websocket/ng-websocket.js"></script>
+  <script type="text/javascript" src="bower_components/angular-socket-io/socket.js"></script>
+  <script type="text/javascript" src="bower_components/phaser/build/phaser.min.js"></script>
+
   <!-- substitute:js -->
 </body>
 </html>

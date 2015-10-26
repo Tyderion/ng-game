@@ -10,9 +10,9 @@ server.listen(port, function() {
   console.log("Running on port ", port);
 });
 
-var staticPath = path.join(__dirname, '../client/production');
+var staticPath = path.join(__dirname, '../client2/production');
 if (process.env.NODE_ENV !== "production") {
-  staticPath = path.join(__dirname, '../client/dist')
+    staticPath = path.join(__dirname, '../client2/dist')
 }
 
 app.use(express.static(staticPath, { maxAge: 86400000 }));
